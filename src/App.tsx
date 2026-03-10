@@ -99,11 +99,7 @@ const App = () => {
         </thead>
         <tbody>
           {
-            users.filter((user) => {
-              if (select == "") return true
-              else if (select == "true") return user.status
-              else return !user.status
-            }).filter((e) => e.name.toLowerCase().includes(search.toLowerCase())).map((user) => {
+            users.filter((e) => e.status.toString().includes(select)).filter((e) => e.name.toLowerCase().includes(search.toLowerCase())).map((user) => {
               return <tr className='border-[1px] border-solid border-[#cccccc]'>
                 <td className='p-[20px]' >{user.id}</td>
                 <td className='p-[20px]'>
