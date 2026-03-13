@@ -1,7 +1,7 @@
 import { useFormik } from 'formik'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addUser, editUser, type IData } from './store/counter'
+import { addUser, deleteUser, editUser, type IData } from './store/counter'
 import edit from './assets/edit.svg'
 import delet from './assets/delete.svg'
 import { Button, Input, Modal } from 'antd'
@@ -117,7 +117,7 @@ const App = () => {
                   }
                 </td>
                 <td className='p-[15px] flex gap-[10px]'>
-                  <img src={delet} alt="" />
+                  <img src={delet} onClick={()=> dispatch(deleteUser(user.id))} alt="" />
                   <img src={edit} onClick={() => { showModalEdit(), handleEdit(user) }} alt="" />
                   <input checked={user.status} onClick={() => dispatch(editUser({ ...user, status: !user.status }))} type="checkbox" className='w-[23px] h-[23px]' />
                 </td>
