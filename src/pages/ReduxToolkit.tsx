@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import edit from '../assets/edit.svg'
 import delet from '../assets/trash (1).svg'

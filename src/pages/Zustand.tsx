@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { useTodo } from '../storeZustand/Todo'
 import delet from '../assets/trash (1).svg'
 import edit from '../assets/edit.svg'
@@ -68,11 +68,11 @@ const Zustand = () => {
     };
 
     const showModalEdit = () => {
-        setAddModal(true);
+        setEditModal(true);
     };
 
     const handleCancelEdit = () => {
-        setAddModal(false);
+        setEditModal(false);
     };
 
 

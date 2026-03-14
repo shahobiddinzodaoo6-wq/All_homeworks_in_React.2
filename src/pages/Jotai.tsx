@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { addUser, dataAtom, deleteUser, editUser } from '../atom/counter'
 import { useFormik } from 'formik'
 import { Button, Input, Modal } from 'antd'
