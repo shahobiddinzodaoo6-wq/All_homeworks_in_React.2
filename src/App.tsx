@@ -1,18 +1,40 @@
-import React, { useState } from 'react'
-import { useTodo } from './store/Todo'
+import  { useEffect, useState } from 'react'
+import { useTodo, type IUser } from './store/Todo'
 import { useFormik } from 'formik'
 import { Button, Input, Modal, Select } from "antd"
-import { Option } from 'antd/es/mentions'
+
 import delet from './assets/delete.svg'
 import edit from './assets/edit.svg'
+
+type User = {
+  id: number;
+  name: string;
+  age: number;
+  avatar: string;
+  status: boolean;
+};
+
+type TodoStore = {
+  users: User[];
+  getData: () => void;
+  deleteUser: (id: number) => void;
+  addUser: (user: User) => void;
+  editUser: (user: User) => void;
+  selectData: (value: "all" | "true" | "false") => void;
+  searchData: (value: string) => void;
+};
 
 
 
 const App = () => {
-  const { users, deleteUser, editUser, addUser } = useTodo()
-  let [idx, setIdx] = useState(null)
-  let [search, setSearch] = useState("")
-  let [select, setSelect] = useState("")
+  const { users, getData, deleteUser, addUser, editUser, selectData, searchData } = useTodo() as TodoStore;
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  let [idx, setIdx] = useState<number | null>(null)
+
   const { handleChange, handleSubmit, resetForm, setFieldValue, values } = useFormik({
     initialValues:
     {
@@ -21,33 +43,29 @@ const App = () => {
       avatar: ""
     },
     onSubmit: (value) => {
-      if (idx) {
+      if (!idx) {
         addUser({
           id: Date.now(),
           name: value.name,
           age: value.age,
-          avatar: value.avatar
+          avatar: value.avatar,
+          status: false
         })
-        resetForm()
-        handleCancelEdit()
-      }
-      else {
-
-        editUser({ id: idx, ...value })
         resetForm()
         handleCancel()
-        addUser({
-          name: value.name,
-          age: value.age,
-          avatar: value.avatar
+      }
+      else {
+        editUser({
+          id: idx,
+          status: false,
+          ...value
         })
-        resetForm()
         handleCancelEdit()
       }
     }
   })
 
-  const handleEdit = (user) => {
+  const handleEdit = (user:IUser) => {
     setIdx(user.id),
       setFieldValue("name", user.name),
       setFieldValue("age", user.age)
@@ -76,20 +94,23 @@ const App = () => {
     <div className='max-w-[1400px] m-auto mt-[100px]'>
       <div className='flex gap-[40px]  mb-[50px]'>
         <Button className='ml-[170px]' type='primary' onClick={showModal}>Add New User</Button>
-        <input className=' h-[30px] border rounded-[5px] pl-[20px]' value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder='Search' />
-        <Select value={select}
-          onChange={(value) => setSelect(value)}
+        <input onChange={(e) => searchData(e.target.value)} className=' h-[31px] border-[1px] border-solid border-gray-300 outline-blue-400 rounded-[5px] pl-[20px]' type="text" placeholder='Search...' />
+        <Select
           style={{ width: 120 }}
-          placeholder="Select status" >
-          <Option value="">All</Option>
-          <Option value="true">Active</Option>
-          <Option value="false">Inactive</Option>
-        </Select>
+          placeholder="Select status"
+          onChange={(value: "all" | "true" | "false") => selectData(value)}
+          options={[
+            { value: "all", label: "All" },
+            { value: "true", label: "Active" },
+            { value: "false", label: "Inactive" },
+          ]} />
+
+
       </div>
-   
+
       <table className='w-[80%] m-auto border-collapse text-left '>
         <thead>
-          <tr className='border-[1px] border-solid border-[#cccccc]'>
+          <tr className='border-[1px] border-solid border-[#cccccc] bg-gray-200  '>
             <th className='p-[20px]'>#</th>
             <th className='p-[20px]'>Name</th>
             <th className='p-[20px]'>Age</th>
@@ -99,17 +120,17 @@ const App = () => {
         </thead>
         <tbody>
           {
-            users.filter((e) => e.status.toString().includes(select)).filter((e) => e.name.toLowerCase().includes(search.toLowerCase())).map((user) => {
+            users.map((user) => {
               return <tr className='border-[1px] border-solid border-[#cccccc]'>
                 <td className='p-[20px]' >{user.id}</td>
-                <td className='p-[20px]'>
+                <td className='p-[10px]'>
                   <div className='flex gap-[10px]'>
                     <img src={user.avatar} className='w-[60px] h-[60px] rounded-[50%] ' alt="" />
                     <h1 className='text-[20px] mt-[10px]'>{user.name}</h1>
                   </div>
                 </td>
-                <td className='p-[20px]'>{user.age}</td>
-                <td className='p-[20px]'>
+                <td className='p-[10px]'>{user.age}</td>
+                <td className='p-[10px]'>
                   {user.status && (
                     <p className='text-[green]'>Active</p>
                   )
@@ -119,7 +140,7 @@ const App = () => {
                   )
                   }
                 </td>
-                <td className='p-[20px]'>
+                <td className='p-[10px]'>
                   <div className='flex gap-[20px]'>
                     <img onClick={() => deleteUser(user.id)} src={delet} alt="" />
                     <img src={edit} onClick={() => { showModalEdit(), handleEdit(user) }} alt="" />
@@ -138,12 +159,13 @@ const App = () => {
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={addModal}
         onCancel={handleCancel}
+        footer={null}
       >
         <form onSubmit={handleSubmit}>
           <Input name='name' value={values.name} onChange={handleChange} placeholder="Name" />
           <Input name='avatar' value={values.avatar} onChange={handleChange} placeholder="Image" />
           <Input name='age' value={values.age} onChange={handleChange} placeholder="Age" />
-          <button>Save</button>
+          <button className='m-[10px]' type='submit'>Save</button>
         </form>
       </Modal>
 
@@ -154,6 +176,7 @@ const App = () => {
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={editModal}
         onCancel={handleCancelEdit}
+        footer={null}
       >
         <form onSubmit={handleSubmit}>
           <Input name='name' value={values.name} onChange={handleChange} placeholder="Name" />

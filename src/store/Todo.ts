@@ -1,49 +1,93 @@
+import axios from "axios";
 import { create } from "zustand";
 
+let api = "https://6941690a686bc3ca8166e0b0.mockapi.io/users"
 
 
-export const useTodo = create((set) => (
-    {
-        users: [
-            {
-                name: "Ali",
-                age: 18,
-                status: false,
-                avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
-                id: 1
-            },
-            {
-                name: "Karim",
-                age: 20,
-                status: true,
-                avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140061.png",
-                id: 2
-            },
-            {
-                name: "Said",
-                age: 17,
-                status: false,
-                avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140037.png",
-                id: 3
-            },
-            {
-                name: "Jasur",
-                age: 22,
-                status: true,
-                avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140051.png",
-                id: 4
-            }
 
 
-        ],
-        deleteUser: (id: number) =>
-            set((state: any) => ({ users: state.users.filter((item: any) => item.id != id) })),
+export interface IUser {
+    id: number
+    name: string
+    age: number
+    avatar: string
+    status: boolean
+}
 
-        editUser: (obj: any) => {
-            set((state: any) => ({ users: state.users.map((item) => item.id == obj.id ? obj : item) }))
-        },
-        addUser: (newUser) => {
-            set((state) => ({ users: [...state.users, { ...newUser }] }))
+export interface ITodoStore {
+    users: IUser[]
+
+    getData: () => Promise<void>
+
+    deleteUser: (id: number) => Promise<void>
+
+    addUser: (newUser: IUser) => Promise<void>
+
+    editUser: (editObj: IUser) => Promise<void>
+
+    selectData: (status: "all" | "true" | "false") => Promise<void>
+
+    searchData: (searching: string) => Promise<void>
+}
+
+
+export const useTodo = create<ITodoStore>((set, get) => ({
+    users: [],
+    getData: async () => {
+        try {
+            const { data } = await axios.get<IUser[]>(api)
+            set({ users: data })
+        } catch (error) {
+            console.error(error);
         }
-    }
+    },
+    deleteUser: async (id: number) => {
+        try {
+            await axios.delete(`${api}/${id}`)
+            await get().getData()
+        } catch (error) {
+            console.error(error);
+
+        }
+    },
+    addUser: async (newUser: IUser) => {
+        try {
+            await axios.post(api, newUser)
+            get().getData()
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    editUser: async (editObj: IUser) => {
+        try {
+            await axios.put(`${api}/${editObj.id}`, editObj)
+            get().getData()
+        } catch (error) {
+            console.error(error);
+
+        }
+    },
+    selectData: async (status: any) => {
+        try {
+            if (status != "all") {
+                const { data } = await axios.get(`${api}?status=${status}`);
+                set({ users: data });
+            } else {
+                await get().getData();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    },
+    searchData: async (searching: any) => {
+        try {
+            const { data } = await axios.get(`${api}?name=${searching}`);
+            set({ users: data });
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+
+}
 ))
