@@ -1,10 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import axios from 'axios';
+
+
+
+
+
+let api = "http://6941690a686bc3ca8166e0b0.mockapi.io/data"
+
 
 export interface IData {
-  id: number;
+  id: string;
   name: string;
-  age: number;
+  age: string;
   avatar: string;
   status: boolean
 }
@@ -12,61 +19,137 @@ export interface IData {
 
 
 export interface CounterState {
-  users: IData[]
+  users: IData[],
+  isLoading: boolean
 }
 
 const initialState: CounterState = {
-  users: [
-    {
-      name: "Ali",
-      age: 18,
-      status: false,
-      avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
-      id: 1
-    },
-    {
-      name: "Karim",
-      age: 20,
-      status: true,
-      avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140061.png",
-      id: 2
-    },
-    {
-      name: "Said",
-      age: 17,
-      status: false,
-      avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140037.png",
-      id: 3
-    },
-    {
-      name: "Jasur",
-      age: 22,
-      status: true,
-      avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140051.png",
-      id: 4
-    }
-
-
-  ]
+  users: [],
+  isLoading: false
 }
+
+export const GetData = createAsyncThunk("counter/GetData", async () => {
+  try {
+    const { data } = await axios.get(api)
+    return data
+  } catch (error) {
+    console.error(error);
+
+  }
+})
+
+
+export const DeleteUser = createAsyncThunk("counter/DeleteUser", async (id: string, { dispatch }) => {
+  try {
+    await axios.delete(`${api}/${id}`);
+    dispatch(GetData())
+  } catch (error) {
+    console.error(error);
+
+  }
+})
+export const addUser = createAsyncThunk("counter/addUser", async (newUser: any, { dispatch }) => {
+  try {
+    await axios.post(api, newUser)
+    dispatch(GetData())
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+
+export const editUser = createAsyncThunk("counter/addUser", async (ObjUser: any, { dispatch }) => {
+  try {
+    await axios.put(`${api}/${ObjUser.id}`, ObjUser)
+    dispatch(GetData())
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+export const selectData = createAsyncThunk(
+  "users/selectData",
+  async (status: string,) => {
+    try {
+      if (status !== "all") {
+        const { data } = await axios.get(`${api}?status=${status}`);
+        return data;
+      } else {
+        const { data } = await axios.get(api);
+        return data;
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+);
+
+
+export const searchData = createAsyncThunk(
+  "users/searchData",
+  async (searching: string) => {
+    try {
+      const { data } = await axios.get(`${api}?name=${searching}`);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+);
+
+
 
 export const counterSlice = createSlice({
   name: 'counter',
   initialState,
-  reducers: {
-    deleteUser: ((state, { payload }) => {
-      state.users = state.users.filter((e) => e.id != payload)
-    }),
-    addUser: ((state, { payload }) => {
-      state.users = [...state.users, { ...payload }]
-    }),
-    editUser: ((state, { payload }) => {
-      state.users = state.users.map((e) => e.id == payload.id ? payload : e)
+  reducers: {},
+  extraReducers: (builder) => {
+
+    builder.addCase(GetData.pending, (state) => {
+      state.isLoading = true
     })
-  },
+
+    builder.addCase(GetData.fulfilled, (state, action) => {
+      state.users = action.payload
+      state.isLoading = false
+    })
+
+    builder.addCase(GetData.rejected, (state) => {
+      state.isLoading = false
+    })
+
+    // SELECT
+    builder.addCase(selectData.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(selectData.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.users = action.payload;
+    });
+    builder.addCase(selectData.rejected, (state) => {
+      state.isLoading = false;
+    });
+
+    // SEARCH
+    builder.addCase(searchData.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(searchData.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.users = action.payload;
+    });
+    builder.addCase(searchData.rejected, (state) => {
+      state.isLoading = false;
+    });
+
+  }
+
 })
 
 
-export const {deleteUser,addUser,editUser } = counterSlice.actions
+
+
+export const { } = counterSlice.actions
 
 export default counterSlice.reducer
