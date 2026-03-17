@@ -1,10 +1,9 @@
 import { useFormik } from 'formik'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { addUser, DeleteUser, editUser, GetData, searchData, selectData, type IData } from './store/counter'
 import edit from './assets/edit.svg'
 import delet from './assets/delete.svg'
-import { data } from 'react-router'
 import { Button, Input, Modal } from 'antd'
 import type { AppDispatch, RootState } from './store/store'
 
@@ -20,7 +19,7 @@ const App = () => {
 
 
 
-  let [idx, setIdx] = useState<String | null >(null)
+  let [idx, setIdx] = useState<string | null >(null)
 
 
   const { setFieldValue, handleChange, handleSubmit, values, resetForm } = useFormik(
@@ -33,8 +32,9 @@ const App = () => {
       onSubmit: (value) => {
         if (!idx) {
           dispatch(addUser({
+            id: Date.now().toString(),
             name: value.name,
-            age: value.age,
+            age:  value.age,
             avatar: value.avatar,
             status: false
           }))

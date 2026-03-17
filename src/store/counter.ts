@@ -11,7 +11,7 @@ let api = "http://6941690a686bc3ca8166e0b0.mockapi.io/data"
 export interface IData {
   id: string;
   name: string;
-  age: string;
+  age: number;
   avatar: string;
   status: boolean
 }
@@ -34,21 +34,21 @@ export const GetData = createAsyncThunk("counter/GetData", async () => {
     return data
   } catch (error) {
     console.error(error);
-
   }
 })
 
 
 export const DeleteUser = createAsyncThunk("counter/DeleteUser", async (id: string, { dispatch }) => {
   try {
-    await axios.delete(`${api}/${id}`);
+    await axios.delete(`${api}/${id}`)
     dispatch(GetData())
   } catch (error) {
     console.error(error);
-
   }
 })
-export const addUser = createAsyncThunk("counter/addUser", async (newUser: any, { dispatch }) => {
+
+
+export const addUser = createAsyncThunk("counter/addUser", async (newUser: IData, { dispatch }) => {
   try {
     await axios.post(api, newUser)
     dispatch(GetData())
@@ -58,45 +58,42 @@ export const addUser = createAsyncThunk("counter/addUser", async (newUser: any, 
 })
 
 
-export const editUser = createAsyncThunk("counter/addUser", async (ObjUser: any, { dispatch }) => {
+export const editUser = createAsyncThunk("counter/editUser", async (objUser: IData, {dispatch}) => {
   try {
-    await axios.put(`${api}/${ObjUser.id}`, ObjUser)
+    await axios.put(`${api}/${objUser.id}`, objUser)
     dispatch(GetData())
   } catch (error) {
     console.error(error);
   }
 })
 
-export const selectData = createAsyncThunk(
-  "users/selectData",
-  async (status: string,) => {
-    try {
-      if (status !== "all") {
-        const { data } = await axios.get(`${api}?status=${status}`);
-        return data;
-      } else {
-        const { data } = await axios.get(api);
-        return data;
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+
+export const searchData = createAsyncThunk("counter/searchData", async (searching: string) => {
+  try {
+    const {data} = await axios.get(`${api}?name=${searching}`)
+    return data 
+  } catch (error) {
+    console.error(error);
   }
-);
+})
 
 
-export const searchData = createAsyncThunk(
-  "users/searchData",
-  async (searching: string) => {
-    try {
-      const { data } = await axios.get(`${api}?name=${searching}`);
-      return data;
-    } catch (error) {
-      console.error(error);
+
+
+export const selectData = createAsyncThunk( "counter/selectData", async (status: string) => {
+  try {
+    if (status != "all" ) {
+      const {data} = await axios.get(`${api}?status=${status}`)
+      return data
+    }else{
+        const {data} = await axios.get(api)
+        return data
     }
+  } catch (error) {
+    console.error(error);
   }
-);
+})
+
 
 
 
@@ -119,7 +116,7 @@ export const counterSlice = createSlice({
       state.isLoading = false
     })
 
-    // SELECT
+
     builder.addCase(selectData.pending, (state) => {
       state.isLoading = true;
     });
@@ -131,7 +128,7 @@ export const counterSlice = createSlice({
       state.isLoading = false;
     });
 
-    // SEARCH
+
     builder.addCase(searchData.pending, (state) => {
       state.isLoading = true;
     });
