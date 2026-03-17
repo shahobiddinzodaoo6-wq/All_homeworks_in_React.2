@@ -5,7 +5,7 @@ import axios from 'axios';
 
 
 
-let api = "http://6941690a686bc3ca8166e0b0.mockapi.io/data"
+let api = "https://6941690a686bc3ca8166e0b0.mockapi.io/data"
 
 
 export interface IData {
