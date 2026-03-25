@@ -1,93 +1,89 @@
-import axios from "axios";
-import { create } from "zustand";
+import axios from "axios"
+import { create } from "zustand"
 
-let api = "https://6941690a686bc3ca8166e0b0.mockapi.io/users"
+let api = "http://37.27.29.18:8001/api/to-dos"
+let checkUrl = "http://37.27.29.18:8001/completed"
 
+export const useTodo = create((set, get) => ({
+   users: [],
+  infoUser: {},
 
+  getData: async () => {
+    try {
+      const { data } = await axios.get(api)
+      set({ users: data.data })
+    } catch (error) {
+      console.error(error)
+    }
+  },
 
+ 
+  getInfo: async (id) => {
+    try {
+      let { data } = await axios.get(`${api}/${id}`)
+      set({ infoUser: data.data })
+    } catch (error) {
+      console.error(error)
+    }
+  },
 
-export interface IUser {
-    id: number
-    name: string
-    age: number
-    avatar: string
-    status: boolean
-}
-
-export interface ITodoStore {
-    users: IUser[]
-
-    getData: () => Promise<void>
-
-    deleteUser: (id: number) => Promise<void>
-
-    addUser: (newUser: IUser) => Promise<void>
-
-    editUser: (editObj: IUser) => Promise<void>
-
-    selectData: (status: "all" | "true" | "false") => Promise<void>
-
-    searchData: (searching: string) => Promise<void>
-}
-
-
-export const useTodo = create<ITodoStore>((set, get) => ({
-    users: [],
-    getData: async () => {
-        try {
-            const { data } = await axios.get<IUser[]>(api)
-            set({ users: data })
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    deleteUser: async (id: number) => {
-        try {
-            await axios.delete(`${api}/${id}`)
-            await get().getData()
-        } catch (error) {
-            console.error(error);
-
-        }
-    },
-    addUser: async (newUser: IUser) => {
-        try {
-            await axios.post(api, newUser)
-            get().getData()
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    editUser: async (editObj: IUser) => {
-        try {
-            await axios.put(`${api}/${editObj.id}`, editObj)
-            get().getData()
-        } catch (error) {
-            console.error(error);
-
-        }
-    },
-    selectData: async (status: any) => {
-        try {
-            if (status != "all") {
-                const { data } = await axios.get(`${api}?status=${status}`);
-                set({ users: data });
-            } else {
-                await get().getData();
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    searchData: async (searching: any) => {
-        try {
-            const { data } = await axios.get(`${api}?name=${searching}`);
-            set({ users: data });
-        } catch (error) {
-            console.error(error);
-        }
-    },
+ 
+  deleteUser: async (id) => {
+    try {
+      await axios.delete(`${api}?id=${id}`)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  },
 
 
-}
-))
+  addUser: async (formData) => {
+    try {
+      await axios.post(api, formData)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  },
+
+
+  editUser: async (obj) => {
+    try {
+      await axios.put(api, obj)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  },
+
+
+  checkStatus: async (id) => {
+    try {
+      await axios.put(`${checkUrl}?id=${id}`)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  },
+
+
+  deleteImage: async (id) => {
+    try {
+      await axios.delete(`${api}/images/${id}`)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  },
+
+
+  addImage: async (id, formData) => {
+    try {
+      await axios.post(`${api}/${id}/images`, formData)
+      get().getData()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+}))

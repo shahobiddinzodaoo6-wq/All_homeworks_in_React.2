@@ -1,211 +1,213 @@
-import { useEffect, useState } from 'react'
-import { useTodo, type IUser } from './store/Todo'
-import { useForm } from "react-hook-form"
-import { Button, Modal, Select, Switch, Table } from "antd"
-import type { ColumnsType } from "antd/es/table"
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons"
+import React, { useEffect, useState } from 'react'
+import { useTodo } from './store/Todo'
+import { Button, Modal, Switch } from 'antd'
+import { useForm } from 'react-hook-form'
 
 import delet from './assets/delete.svg'
 import edit from './assets/edit.svg'
+import info from './assets/info.svg'
 
-type FormData = {
-  name: string
-  age: number
-  avatar: string
-}
+let apiImg = "http://37.27.29.18:8001/images"
 
 const App = () => {
-  const { users, getData, deleteUser, addUser, editUser, selectData, searchData } = useTodo()
+  const {
+    users,
+    getData,
+    deleteUser,
+    addUser,
+    editUser,
+    checkStatus,
+    deleteImage,
+    addImage,
+    infoUser,
+    getInfo
+  } = useTodo()
 
   useEffect(() => {
     getData()
   }, [])
 
-  let [idx, setIdx] = useState<number | null>(null)
-
-  const { register, handleSubmit, reset, setValue } = useForm<FormData>()
-
-  const onSubmit = (data: FormData) => {
-    if (!idx) {
-      addUser({
-        id: Date.now(),
-        name: data.name,
-        age: data.age,
-        avatar: data.avatar,
-        status: false
-      })
-      reset()
-      handleCancel()
-    } else {
-      editUser({
-        id: idx,
-        status: false,
-        ...data
-      })
-      handleCancelEdit()
-    }
-  }
-
-  const handleEdit = (user: IUser) => {
-    setIdx(user.id)
-    setValue("name", user.name)
-    setValue("age", user.age)
-    setValue("avatar", user.avatar)
-  }
 
   const [addModal, setAddModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
-
-  const handleCancel = () => setAddModal(false)
-  const handleCancelEdit = () => setEditModal(false)
+  const [imgModal, setImgModal] = useState(false)
 
 
-  
-  
-  const columns: ColumnsType<IUser> = [
-    {
-      title: "#",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Name",
-      key: "name",
-      render: (_, user) => (
-        <div className="flex gap-[10px] items-center">
-          <img src={user.avatar} className="w-[40px] h-[40px] rounded-full" />
-          {user.name}
-        </div>
-      ),
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-    },
-    {
-      title: "Status",
-      key: "status",
-      render: (_, user) =>
-        user.status
-          ? <p className="text-green-500">Active</p>
-          : <p className="text-red-500">Inactive</p>,
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, user) => (
-        <div className="flex gap-[10px] items-center">
-          <img onClick={() => deleteUser(user.id)} src={delet} />
+  const [infoModal, setInfoModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
 
-          <img onClick={() => {
-            handleEdit(user)
-            setEditModal(true)
-          }} src={edit} />
+  const [idx, setIdx] = useState<number | null>(null)
 
-          <Switch
-            checked={user.status}
-            onChange={() => editUser({ ...user, status: !user.status })}
-            checkedChildren={<CheckOutlined />}
-            unCheckedChildren={<CloseOutlined />}
-          />
-        </div>
-      ),
-    },
-  ]
+
+  const { register, handleSubmit, reset, setValue } = useForm()
+
+  const onSubmit = (data) => {
+    let form = new FormData()
+    form.append("Name", data.name)
+    form.append("Description", data.description)
+
+    for (let i = 0; i < data.file.length; i++) {
+      form.append("Images", data.file[i])
+    }
+
+    if (!idx) {
+      addUser(form)
+      setAddModal(false)
+      reset()
+    } else {
+      editUser({
+        id: idx,
+        name: data.name,
+        description: data.description
+      })
+      setEditModal(false)
+    }
+
+
+
+  }
+
+  function handleEdit(user: any) {
+    setIdx(user.id)
+    setValue("name", user.name)
+    setValue("description", user.description)
+  }
+
+
+
+
+  const onAddImage = (data) => {
+    let form = new FormData()
+    for (let i = 0; i < data.fileImg.length; i++) {
+      form.append("Images", data.fileImg[i])
+    }
+
+    addImage(idx, form)
+    setImgModal(false)
+    reset()
+  }
 
   return (
-    <div className='max-w-[1400px] m-auto mt-[100px]'>
+    <>
+      <Button onClick={() => setAddModal(true)} className='m-[50px]'>
+        ADD USER +
+      </Button>
 
-      <div className='flex gap-[40px] mb-[50px]'>
-        <Button onClick={() => setAddModal(true)}>Add User</Button>
+      <div className='flex flex-wrap gap-[30px] m-[100px]'>
+        {
+          users.map((user) => (
+            <div key={user.id} className='w-[320px] rounded-[10px] shadow p-[10px] text-center'>
 
-        <input
-          onChange={(e) => searchData(e.target.value)}
-          placeholder='Search...'
-          className='h-[31px] border border-gray-300 rounded-[5px] pl-[20px]'
-        />
+              {
+                user.images.map((img) => (
+                  <div key={img.id}>
+                    <img src={`${apiImg}/${img.imageName}`} className='w-full h-[150px]' />
+                    <div className='flex justify-center gap-[10px] mt-[5px]'>
+                      <Button danger onClick={() => deleteImage(img.id)}>del</Button>
+                      <Button onClick={() => {
+                        setIdx(user.id)
+                        setImgModal(true)
+                      }}>add</Button>
+                    </div>
+                  </div>
+                ))
+              }
 
-        <Select
-          style={{ width: 120 }}
-          onChange={(value) => selectData(value)}
-          options={[
-            { value: "all", label: "All" },
-            { value: "true", label: "Active" },
-            { value: "false", label: "Inactive" },
-          ]}
-        />
+              <h1 className={user.isCompleted ? "text-green-500" : "text-red-500"}>
+                {user.name}
+              </h1>
+
+              <p>{user.description}</p>
+
+              <div className='flex justify-center gap-[10px] mt-[10px]'>
+
+                <img src={edit} onClick={() => {
+                  handleEdit(user)
+                  setEditModal(true)
+                }} />
+
+                <img src={delet} onClick={() => deleteUser(user.id)} />
+
+                <img src={info} onClick={() => {
+                  getInfo(user.id)
+                  setInfoModal(true)
+                }} />
+
+
+                <Switch defaultChecked checked={user.isCompleted} onChange={() => checkStatus(user.id)} />
+              </div>
+            </div>
+          ))
+        }
       </div>
 
+      {/* Add */}
+      <Modal open={addModal} onCancel={() => setAddModal(false)} footer={null}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <input className='w-[300px] h-[43px] rounded-[5px] border pl-[20px]'  {...register("name")} placeholder='Name' />
+          <input className='w-[300px] h-[43px] rounded-[5px] border pl-[20px]'  {...register("description")} placeholder='Description' />
+          <input type="file" multiple {...register("file")} />
+          <button type='submit'>Save</button>
+        </form>
+      </Modal>
 
-      <Table
-        columns={columns}
-        dataSource={users}
-        rowKey="id"
-      />
+      {/* Edit */}
+      <Modal open={editModal} onCancel={() => setEditModal(false)} footer={null}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <input className='w-[300px] h-[43px] rounded-[5px] border pl-[20px]' {...register("name")} />
+          <input className='w-[300px] h-[43px] rounded-[5px] border pl-[20px]'  {...register("description")} /> <br />
+          <button type='submit'>Save</button>
+        </form>
+      </Modal>
 
-
-      <Modal open={addModal} onCancel={handleCancel} footer={null}>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-[15px]">
-
-          <input
-            {...register("name")}
-            placeholder="Name"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <input
-            {...register("avatar")}
-            placeholder="Avatar"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <input
-            {...register("age")}
-            placeholder="Age"
-            type="number"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <button className="bg-blue-500 text-white p-[10px] rounded-[6px]">
-            Save
-          </button>
-
+      {/* addImage */}
+      <Modal open={imgModal} onCancel={() => setImgModal(false)} footer={null}>
+        <form onSubmit={handleSubmit(onAddImage)}>
+          <input type="file" multiple {...register("fileImg")} />
+          <button type='submit'>Save</button>
         </form>
       </Modal>
 
 
+      {/* Info */}
+      <Modal
+        open={infoModal}
+        onCancel={() => setInfoModal(false)}
+        footer={null}
+      >
+        {
+          infoUser && (
+            <div className='text-center'>
 
+              <div className='flex flex-wrap gap-[10px] justify-center'>
+                {
+                  infoUser.images?.map((img) => (
+                    <img
+                      key={img.id}
+                      src={`${apiImg}/${img.imageName}`}
+                      className='w-[120px] h-[120px] rounded'
+                    />
+                  ))
+                }
+              </div>
 
-      <Modal open={editModal} onCancel={handleCancelEdit} footer={null}>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-[15px]">
-
-          <input
-            {...register("name")}
-            placeholder="Name"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <input
-            {...register("avatar")}
-            placeholder="Avatar"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <input
-            {...register("age")}
-            placeholder="Age"
-            type="number"
-            className="border border-gray-300 rounded-[6px] p-[10px] outline-blue-500"
-          />
-
-          <button className="bg-blue-500 text-white p-[10px] rounded-[6px]">
-            Save
-          </button>
-
-        </form>
+              <h1 className='text-[22px] mt-[10px] font-bold'>
+                {infoUser.name}
+              </h1>
+              <p>{infoUser.description}</p>
+              {infoUser.isCompleted && (
+                <p className='text-[green]'>Active</p>
+              )
+              }
+              {!infoUser.isCompleted && (
+                <p className='text-[red]'>Inactive</p>
+              )
+              }
+            </div>
+          )
+        }
       </Modal>
-    </div>
+    </>
   )
 }
 
