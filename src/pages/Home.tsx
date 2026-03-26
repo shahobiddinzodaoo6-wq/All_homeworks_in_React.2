@@ -5,6 +5,14 @@ import { Controller, useForm } from "react-hook-form";
 import delet from "../assets/delete.svg";
 import edit from "../assets/edit.svg";
 import info from '../assets/info.svg'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 import {
   GetTodo,
@@ -91,81 +99,84 @@ const App = () => {
       </Button>
 
       <div className="flex flex-wrap gap-[30px] m-[100px]">
-        {data.map((user: any) => (
-          <div
-            key={user.id}
-            className="w-[320px] rounded-[10px] shadow p-[10px] text-center"
-          >
-            {user.images.map((img: any) => (
-              <div key={img.id}>
-                <img
-                  src={`${apiImage}/${img.imageName}`}
-                  className="w-full h-[150px]"
-                />
+  {data.map((user: any) => (
+    <Card key={user.id} className="w-[320px]">
 
-                <div className="flex justify-center gap-[10px] mt-[5px]">
-                  <Button
-                    danger
-                    onClick={() =>
-                      dispatch(deleteImage(img.id) as any)
-                    }
-                  >
-                    del
-                  </Button>
+      <CardHeader>
+        <CardTitle
+          className={
+            user.isCompleted ? "text-green-500" : "text-red-500"
+          }
+        >
+          {user.name}
+        </CardTitle>
 
-                  <Button
-                    onClick={() => {
-                      setIdx(user.id);
-                      setImgModal(true);
-                    }}
-                  >
-                    add
-                  </Button>
-                </div>
-              </div>
-            ))}
+        <CardDescription>
+          {user.description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {user.images.map((img: any) => (
+          <div key={img.id} className="mb-[10px]">
+            <img
+              src={`${apiImage}/${img.imageName}`}
+              className="w-full h-[150px] object-cover rounded-md"
+            />
 
-            <h1
-              className={
-                user.isCompleted ? "text-green-500" : "text-red-500"
-              }
-            >
-              {user.name}
-            </h1>
-
-            <p>{user.description}</p>
-
-            <div className="flex justify-center gap-[10px] mt-[10px]">
-              <img
-                src={edit}
-                onClick={() => {
-                  handleEdit(user);
-                  setEditModal(true);
-                }}
-              />
-
-              <img
-                src={delet}
+            <div className="flex justify-center gap-[10px] mt-[5px]">
+              <Button
+                danger
                 onClick={() =>
-                  dispatch(deleteUser(user.id) as any)
+                  dispatch(deleteImage(img.id) as any)
                 }
-              />
-               <Link to={`/Info/:${user.id}`}>
-                   <img src={info} alt="" onClick={() =>  dispatch(infoData(user.id))} />
-               </Link>
-
-              <Switch
-                checked={user.isCompleted}
-                onChange={() =>
-                  dispatch(checkStatus(user.id) as any)
-                }
-              />
+              >
+                del
+              </Button>
+              <Button
+                onClick={() => {
+                  setIdx(user.id);
+                  setImgModal(true);
+                }}
+              >
+                add
+              </Button>
             </div>
           </div>
         ))}
-      </div>
+      </CardContent>
+      <CardFooter className="flex justify-center gap-[10px]">
+        <img
+          src={edit}
+          onClick={() => {
+            handleEdit(user);
+            setEditModal(true);
+          }}
+        />
 
-      {/* add */}
+        <img
+          src={delet}
+          onClick={() =>
+            dispatch(deleteUser(user.id) as any)
+          }
+        />
+
+        <Link to={`/Info/:${user.id}`}>
+          <img
+            src={info}
+            onClick={() => dispatch(infoData(user.id))}
+          />
+        </Link>
+
+        <Switch
+          checked={user.isCompleted}
+          onChange={() =>
+            dispatch(checkStatus(user.id) as any)
+          }
+        />
+      </CardFooter>
+    </Card>
+  ))}
+</div>
       <Modal open={addModal} onCancel={() => setAddModal(false)} footer={null}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Controller
@@ -188,7 +199,6 @@ const App = () => {
         </form>
       </Modal>
 
-      {/* Edit */}
       <Modal open={editModal} onCancel={() => setEditModal(false)} footer={null}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Controller
@@ -206,8 +216,6 @@ const App = () => {
           <button type="submit">Save</button>
         </form>
       </Modal>
-
-      {/* Addimage */}
       <Modal open={imgModal} onCancel={() => setImgModal(false)} footer={null}>
         <form onSubmit={handleSubmit(onAddImage)}>
           <input type="file" multiple {...register("fileImg")} />
