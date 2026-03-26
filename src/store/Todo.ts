@@ -1,89 +1,56 @@
-import axios from "axios"
-import { create } from "zustand"
+import { createSlice } from "@reduxjs/toolkit";
+import {
+  GetTodo,
+  infoData
+} from "../api/todoApi";
 
-let api = "http://37.27.29.18:8001/api/to-dos"
-let checkUrl = "http://37.27.29.18:8001/completed"
+interface IImage {
+  id: number;
+  imageName: string;
 
-export const useTodo = create((set, get) => ({
-   users: [],
-  infoUser: {},
+}
 
-  getData: async () => {
-    try {
-      const { data } = await axios.get(api)
-      set({ users: data.data })
-    } catch (error) {
-      console.error(error)
-    }
+interface IData {
+  id: number;
+  name: string;
+  description: string;
+  isCompleted: boolean;
+  images: IImage[];
+}
+
+interface State {
+  data: IData[];
+  isLoading: boolean;
+  infoUser: IData | null
+}
+
+const initialState: State = {
+  data: [],
+  isLoading: false,
+  infoUser: null
+};
+
+export const counterSlice = createSlice({
+  name: "todo",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(GetTodo.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(GetTodo.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(GetTodo.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(infoData.fulfilled, (state, action) => {
+      state.infoUser = action.payload
+      state.isLoading = false
+    })
   },
+});
 
- 
-  getInfo: async (id) => {
-    try {
-      let { data } = await axios.get(`${api}/${id}`)
-      set({ infoUser: data.data })
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
- 
-  deleteUser: async (id) => {
-    try {
-      await axios.delete(`${api}?id=${id}`)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
-
-  addUser: async (formData) => {
-    try {
-      await axios.post(api, formData)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
-
-  editUser: async (obj) => {
-    try {
-      await axios.put(api, obj)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
-
-  checkStatus: async (id) => {
-    try {
-      await axios.put(`${checkUrl}?id=${id}`)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
-
-  deleteImage: async (id) => {
-    try {
-      await axios.delete(`${api}/images/${id}`)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  },
-
-
-  addImage: async (id, formData) => {
-    try {
-      await axios.post(`${api}/${id}/images`, formData)
-      get().getData()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-}))
+export default counterSlice.reducer;
