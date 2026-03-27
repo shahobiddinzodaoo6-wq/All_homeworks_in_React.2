@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Switch, Input } from "antd";
+import {  Modal, Switch } from 'antd';
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
 import { useDispatch, useSelector } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import delet from "../assets/delete.svg";
