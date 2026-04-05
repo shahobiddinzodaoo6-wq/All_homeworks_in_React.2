@@ -53,12 +53,7 @@ const App = () => {
     form.append("Name", data.name);
     form.append("Description", data.description);
 
-    if (data.file) {
-      for (let i = 0; i < data.file.length; i++) {
-        form.append("Images", data.file[i]);
-      }
-    }
-
+   
     if (!idx) {
       dispatch(addUser(form) as any);
       setAddModal(false);
@@ -165,7 +160,7 @@ const App = () => {
         <Link to={`/Info/:${user.id}`}>
           <img
             src={info}
-            onClick={() => dispatch(infoData(user.id))}
+            onClick={() => dispatch(infoData(user.id) as any)}
           />
         </Link>
 
@@ -214,6 +209,7 @@ const App = () => {
             control={control}
             render={({ field }) => <Input {...field} />}
           />
+       
 
           <button type="submit">Save</button>
         </form>
@@ -229,3 +225,6 @@ const App = () => {
 };
 
 export default App;
+
+
+
